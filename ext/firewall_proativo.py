@@ -8,7 +8,7 @@ log = core.getLogger()
 
 def _handle_ConnectionUp(event):
     msg = of.ofp_flow_mod()
-    msg.match.dl_src = EthAddr("00:00:00:00:01")
+    msg.match.dl_src = EthAddr("00:00:00:00:00:01")
     msg.match.dl_type = 0x800
 
     #msg.match.nw_proto = 17

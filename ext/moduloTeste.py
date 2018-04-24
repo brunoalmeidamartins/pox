@@ -19,6 +19,9 @@ def _handle_PacketIn(event):
 
     log.info("firewall reativo ativado no Switch: %s", dpidToStr(event.dpid))
 
+    pacote = event
+    log.info(pacote)
+
 
 def launch():
     core.openflow.addListenerByName("PacketIn", _handle_PacketIn)
