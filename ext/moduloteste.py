@@ -16,10 +16,13 @@
 A super simple OpenFlow learning switch that installs rules for
 each pair of L2 addresses.
 """
-
+import json
 # These next two imports are common POX convention
 from pox.core import core
 import pox.openflow.libopenflow_01 as of
+
+from pox.lib.util import dpidToStr
+from pox.lib.addresses import IPAddr, EthAddr
 
 
 # Even a simple usage of the logger is much nicer than print!
@@ -30,6 +33,7 @@ log = core.getLogger()
 # which we last saw a packet *from* 'MAC-addr'.
 # (In this case, we use a Connection object for the switch.)
 table = {}
+table2 = {}
 
 
 # To send out all ports, we can use either of the special ports
@@ -46,7 +50,15 @@ def _handle_PacketIn (event):
 
   # Learn the source
   table[(event.connection,packet.src)] = event.port
-  log.info("Event.port-> %s",event.port)
+  table2[(dpidToStr(event.dpid),packet.src)] = event.port
+  
+  try:
+    arquivo = open('tabela.json','w')
+    arquivo.write(str(table2))
+    arquivo.close()
+  except Exception as erro:
+    print(format(erro))
+
   dst_port = table.get((event.connection,packet.dst))
 
   if dst_port is None:

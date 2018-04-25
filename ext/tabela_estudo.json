@@ -1,0 +1,77 @@
+{
+(<pox.openflow.of_01.Connection object at 0x7f7156d49a50>, EthAddr('00:00:00:00:00:22')): 3, 
+(<pox.openflow.of_01.Connection object at 0x7f7156d49b90>, EthAddr('00:00:00:00:00:22')): 2, 
+(<pox.openflow.of_01.Connection object at 0x7f7156d499d0>, EthAddr('00:00:00:00:00:55')): 3, 
+(<pox.openflow.of_01.Connection object at 0x7f7156d49b90>, EthAddr('00:00:00:00:00:55')): 1, 
+(<pox.openflow.of_01.Connection object at 0x7f7156d499d0>, EthAddr('00:00:00:00:00:33')): 1, 
+(<pox.openflow.of_01.Connection object at 0x7f7156d49a50>, EthAddr('00:00:00:00:00:55')): 4, 
+(<pox.openflow.of_01.Connection object at 0x7f7156d499d0>, EthAddr('00:00:00:00:00:11')): 1, 
+(<pox.openflow.of_01.Connection object at 0x7f7156d499d0>, EthAddr('00:00:00:00:00:44')): 2, 
+(<pox.openflow.of_01.Connection object at 0x7f7156d49a50>, EthAddr('00:00:00:00:00:33')): 1, 
+(<pox.openflow.of_01.Connection object at 0x7f7156d49b90>, EthAddr('00:00:00:00:00:44')): 1, 
+(<pox.openflow.of_01.Connection object at 0x7f7156d49b90>, EthAddr('00:00:00:00:00:33')): 2, 
+(<pox.openflow.of_01.Connection object at 0x7f7156d499d0>, EthAddr('00:00:00:00:00:22')): 1, 
+(<pox.openflow.of_01.Connection object at 0x7f7156d49a50>, EthAddr('00:00:00:00:00:11')): 2, 
+(<pox.openflow.of_01.Connection object at 0x7f7156d49a50>, EthAddr('00:00:00:00:00:44')): 4, 
+(<pox.openflow.of_01.Connection object at 0x7f7156d49b90>, EthAddr('00:00:00:00:00:11')): 2
+}
+{
+	(<pox.openflow.of_01.Connection object at 0x7f7156d49a50>, EthAddr('00:00:00:00:00:22')): 3,
+	(<pox.openflow.of_01.Connection object at 0x7f7156d49a50>, EthAddr('00:00:00:00:00:55')): 4,
+	(<pox.openflow.of_01.Connection object at 0x7f7156d49a50>, EthAddr('00:00:00:00:00:33')): 1,
+	(<pox.openflow.of_01.Connection object at 0x7f7156d49a50>, EthAddr('00:00:00:00:00:11')): 2, 
+	(<pox.openflow.of_01.Connection object at 0x7f7156d49a50>, EthAddr('00:00:00:00:00:44')): 4,
+
+	(<pox.openflow.of_01.Connection object at 0x7f7156d49b90>, EthAddr('00:00:00:00:00:22')): 2,	
+	(<pox.openflow.of_01.Connection object at 0x7f7156d49b90>, EthAddr('00:00:00:00:00:55')): 1,
+	(<pox.openflow.of_01.Connection object at 0x7f7156d49b90>, EthAddr('00:00:00:00:00:44')): 1,
+	(<pox.openflow.of_01.Connection object at 0x7f7156d49b90>, EthAddr('00:00:00:00:00:33')): 2, 
+	(<pox.openflow.of_01.Connection object at 0x7f7156d49b90>, EthAddr('00:00:00:00:00:11')): 2
+
+
+
+	(<pox.openflow.of_01.Connection object at 0x7f7156d499d0>, EthAddr('00:00:00:00:00:55')): 3, 
+	(<pox.openflow.of_01.Connection object at 0x7f7156d499d0>, EthAddr('00:00:00:00:00:33')): 1, 
+	(<pox.openflow.of_01.Connection object at 0x7f7156d499d0>, EthAddr('00:00:00:00:00:11')): 1, 
+	(<pox.openflow.of_01.Connection object at 0x7f7156d499d0>, EthAddr('00:00:00:00:00:44')): 2, 
+	(<pox.openflow.of_01.Connection object at 0x7f7156d499d0>, EthAddr('00:00:00:00:00:22')): 1, 
+
+}
+//Outra forma
+
+{
+ ('00-00-00-00-00-03', EthAddr('00:00:00:00:00:11')): 1,
+ ('00-00-00-00-00-03', EthAddr('00:00:00:00:00:33')): 1, 
+ ('00-00-00-00-00-03', EthAddr('00:00:00:00:00:55')): 3,
+ ('00-00-00-00-00-03', EthAddr('00:00:00:00:00:22')): 1,
+ ('00-00-00-00-00-03', EthAddr('00:00:00:00:00:44')): 2, 
+
+
+('00-00-00-00-00-02', EthAddr('00:00:00:00:00:33')): 2, 
+('00-00-00-00-00-02', EthAddr('00:00:00:00:00:11')): 2, 
+('00-00-00-00-00-02', EthAddr('00:00:00:00:00:44')): 1, 
+('00-00-00-00-00-02', EthAddr('00:00:00:00:00:22')): 2, 
+('00-00-00-00-00-02', EthAddr('00:00:00:00:00:55')): 1, 
+
+
+('00-00-00-00-00-01', EthAddr('00:00:00:00:00:22')): 3, 
+('00-00-00-00-00-01', EthAddr('00:00:00:00:00:55')): 4, 
+('00-00-00-00-00-01', EthAddr('00:00:00:00:00:44')): 4, 
+('00-00-00-00-00-01', EthAddr('00:00:00:00:00:33')): 1, 
+('00-00-00-00-00-01', EthAddr('00:00:00:00:00:11')): 2
+}
+
+//h1 ping h5
+
+{
+('00-00-00-00-00-01', EthAddr('00:00:00:00:00:11')): 2
+('00-00-00-00-00-01', EthAddr('00:00:00:00:00:55')): 4,
+
+('00-00-00-00-00-02', EthAddr('00:00:00:00:00:55')): 1, 
+('00-00-00-00-00-02', EthAddr('00:00:00:00:00:11')): 2,
+
+('00-00-00-00-00-03', EthAddr('00:00:00:00:00:11')): 1,
+('00-00-00-00-00-03', EthAddr('00:00:00:00:00:55')): 3, 
+
+
+}

@@ -1,0 +1,11 @@
+h2 wget -O - h1 						#Obtem o arquivo fornecido pelo servidor
+
+h1 python -m SimpleHTTPServer 80 & 		#Sobe o servidor HTTP
+
+h1 kill %python							#Mata o processo do servidor HTTP
+
+sudo ~/pox/pox.py multicast forwarding.l2_pairs samples.pretty_log log.level --DEBUG
+
+sudo mininet/examples/miniedit.py 
+
+
