@@ -1,7 +1,7 @@
 import os
 
 #senha = 'My password'
-senha = 'Mypassword'
+senha = 'bruno270591'
 
 '''
 Mapeamento dos Host
@@ -43,6 +43,7 @@ linkPrincipal={'s1':[13],
 
 }
 def executaComandosOVS(comando):
+    #print(comando)
     text = os.popen("echo %s | sudo -S %s" % (senha, comando))
 '''
 Define regras de saida dos hosts nos switchs
@@ -102,7 +103,7 @@ listaConexoes = []
 for i in conexoes:
     listaConexoes.append(i)
 for i in listaConexoes:
-    comando = 'ovs-ofctl add-flow ' + conexoes[i][0] + ' dl_dst=' + host[i] +',dl_type = 0x800,nw_proto=17'+ ',actions=output:' +str(conexoes[i][1])
+    comando = 'ovs-ofctl add-flow ' + conexoes[i][0] + ' dl_dst=' + host[i] + ',actions=output:' +str(conexoes[i][1])
     executaComandosOVS(comando)
 
 listaSwitches = []
@@ -117,7 +118,7 @@ for i in listaSwitches:
     if(len(linkPrincipal[i]) == 1):
         for j in listaConexoes:
             if(conexoes[j][0] != i): #Somente para fora do switch
-                comando = 'ovs-ofctl add-flow ' + i + ' dl_dst='+ host[j]+',dl_type = 0x800,nw_proto=17'+',actions=output:'+str(linkPrincipal[i][0])
+                comando = 'ovs-ofctl add-flow ' + i + ' dl_dst='+ host[j]+',dl_type=0x800,nw_proto=1'+',actions=output:'+str(linkPrincipal[i][0])
                 executaComandosOVS(comando)
     else:
         for j in listaConexoes:
@@ -127,11 +128,11 @@ for i in listaSwitches:
                 lista = lista[4]
                 switch_alvo = 's'+lista[1]
                 if(switch_alvo == 's1'):
-                    comando = 'ovs-ofctl add-flow ' + i + ' dl_dst='+ host[j]+',dl_type = 0x800,nw_proto=17'+',actions=output:11'
+                    comando = 'ovs-ofctl add-flow ' + i + ' dl_dst='+ host[j]+',dl_type=0x800,nw_proto=1'+',actions=output:11'
                     executaComandosOVS(comando)
                 elif(switch_alvo == 's2'):
-                    comando = 'ovs-ofctl add-flow ' + i + ' dl_dst='+ host[j]+',dl_type = 0x800,nw_proto=17'+',actions=output:12'
+                    comando = 'ovs-ofctl add-flow ' + i + ' dl_dst='+ host[j]+',dl_type=0x800,nw_proto=1'+',actions=output:12'
                     executaComandosOVS(comando)
                 else:
-                    comando = 'ovs-ofctl add-flow ' + i + ' dl_dst='+ host[j]+',dl_type = 0x800,nw_proto=17'+',actions=output:14'
+                    comando = 'ovs-ofctl add-flow ' + i + ' dl_dst='+ host[j]+',dl_type=0x800,nw_proto=1'+',actions=output:14'
                     executaComandosOVS(comando)
