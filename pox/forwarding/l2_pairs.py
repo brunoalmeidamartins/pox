@@ -46,7 +46,7 @@ def _handle_PacketIn (event):
 
   # Learn the source
   table[(event.connection,packet.src)] = event.port
-  log.info("Event.port-> %s",event.port)
+
   dst_port = table.get((event.connection,packet.dst))
 
   if dst_port is None:
