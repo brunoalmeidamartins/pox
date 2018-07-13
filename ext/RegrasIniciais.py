@@ -46,9 +46,7 @@ def executaComandosOVS(comando):
     #print(comando)
     text = os.popen("echo %s | sudo -S %s" % (senha, comando))
 '''
-Define regras de saida dos hosts nos switchs
-'''
-
+Define regras de saida dos hosts nos switchs "Hosts Conectados ao switches"
 '''
 listaConexoes = []
 
@@ -58,11 +56,7 @@ for i in listaConexoes:
     comando = 'ovs-ofctl add-flow ' + conexoes[i][0] + ' dl_dst=' + host[i] + ',actions=output:' +str(conexoes[i][1])
     executaComandosOVS(comando)
 '''
-
-'''
-Define as outras regras de saida
-'''
-
+Define as outras regras de saida "Hosts nao concetados o switches"
 '''
 listaSwitches = []
 listaHosts = []
@@ -95,9 +89,21 @@ for i in listaSwitches:
                     comando = 'ovs-ofctl add-flow ' + i + ' dl_dst='+ host[j]+',actions=output:14'
                     executaComandosOVS(comando)
 
+'''
+Regras para gerar um PacketIn no controlador caso seja um pacote UDP com destino a porta 1234
+'''
+#ovs-ofctl add-flow s1 dl_src=00:00:00:00:01:01,priority=50000,actions=controller
+#ovs-ofctl add-flow switch priority=50000,dl_type=0x0800,nw_proto=17,tp_dst=1234,actions=output:controller
+for i in listaSwitches:
+    comando = 'ovs-ofctl add-flow ' + i + ' priority=50000,dl_type=0x0800,nw_proto=17,tp_dst=1234,actions=output:controller'
+    executaComandosOVS(comando)
+
+
+
+
+
 
 '''
-
 listaConexoes = []
 
 for i in conexoes:
@@ -136,3 +142,4 @@ for i in listaSwitches:
                 else:
                     comando = 'ovs-ofctl add-flow ' + i + ' dl_dst='+ host[j]+',dl_type=0x800,nw_proto=1'+',actions=output:14'
                     executaComandosOVS(comando)
+'''

@@ -48,6 +48,8 @@ class multicast (EventMixin):
       #self._expire_timer = Timer(5, self._handle_expiration, recurring=True)
 
       core.listen_to_dependencies(self)
+
+
     def dpid_to_mac (self,dpid):
         return EthAddr("%012x" % (dpid & 0xffFFffFFffFF,))
 
@@ -76,15 +78,27 @@ class multicast (EventMixin):
         if isinstance(net, ipv4):
             log.info("Pacote IPv4")
             log.info("Evento gerado na porta ="+str(inport))
-            if inport == 1 or inport == 2: #Eventos foram gerados por hosts conectados ao swtich
+            if (inport == 1 or inport == 2):
+                if(net.protocol != 17):
+                    '''
+                    Primeiro evento gerado instala a regra para todos os hosts
+                    '''
+                    #Chama script de execucao dos links principais
+                    os.system('python pox/ext/RegrasIniciais.py')
+                else:
+                    if (str(transp.dstport) == '1234'): #Eventos foram gerados por hosts conectados ao swtich mas nao sao udp
+                        if str(self.dpid_to_mac(dpid)) == '00:00:00:00:00:03':
+                            msg = of.ofp_flow_mod()
+                            #msg.match.dl_src = EthAddr('00:00:00:00:01:01')
+                            #msg.match.dl_dst = EthAddr('00:00:00:00:03:11')
+                            msg.priority = 50001
+                            msg.actions.append(of.ofp_action_output(port = 17)) #Nao tem ninguem conectado a essa porta
+                            event.connection.send(msg)
+                            log.info("Regra de Drop Adicionada!!") # Supoe que drop o pacote
                 #macSrc = net.
                 #log.info("Gerado por:"+str(packet.src))
                 #event.connection.send(self.defineSaidaHost(str(packet.src),inport))
-                '''
-                Primeiro evento gerado instala a regra para todos os hosts
-                '''
-                #Chama script de execucao dos links principais
-                os.system('python pox/ext/RegrasIniciais.py')
+
             if str(self.dpid_to_mac(dpid)) == '00:00:00:00:00:01':
                 #(inport == 1)
                 msg = of.ofp_flow_mod()
@@ -113,6 +127,8 @@ class multicast (EventMixin):
 
         elif isinstance(net,arp):
             log.info("Pacote ARP")
+            log.info(net)
+            log.info(" ")
             return
         else:
             #log.info("Aconteceu nada!!")

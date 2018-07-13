@@ -1,0 +1,35 @@
+sudo ovs-ofctl add-flow s1 dl_src=00:00:00:00:01:01,priority=50000,actions=controller #Gera um evento no controlador # Lembrar sempre da prioridade!!!
+
+
+Para abrir o vlc nos hosts = vlc-wrapper &
+
+
+Para receber fluxo no host = rtp://@10.0.0.1:1234
+
+Para enviar fluxo no host = "Escolha o rtp, o ip pra onde vai mandar e porta"
+
+
+Para adicionar uma entrada estática na tabela ARP do Aker Firewall é necessário utilizar
+o comando “arp”, através do shell acessado via SSH.
+Por exemplo, para adicionar uma entrada para o IP 192.168.0.10 com endereço MAC
+00:FF:00:FF:00:FF, use o seguinte comando:
+#arp -s 192.168.0.10 00:FF:00:FF:00:FF
+Para verificar se o comando foi executado com sucesso digite no shell:
+
+
+'''
+Regra personalizada
+'''
+$ sudo ovs-ofctl add-flow ofbr priority=50000,dl_type=0x0800,nw_proto=6,nw_src=10.0.0.1,nw_dst=10.0.0.10,tp_src=5000,actions=output:2
+
+Estes comandos que acabamos adicionar criam regras de entrada e saída de pacotes entre os hosts 10.0.0.1 e 10.0.0.10 de nossa rede. É necessário inserir as duas regras no switch para que seja possível o envio de dados em ambos os sentidos. Vamos agora esmiuçar cada comando da linha acima.
+
+add-flow   —> Adiciona regra à bridge
+ofbr   ———> nome da bridge
+priority   —–> Define a prioridade da regra sobre as demais. Caso não seja citado ela tomará a numeração padrão que é 32768. Os limites para prioridade das regras vai de 0 à 65536. Fora disso você verá a mensagem de erro: ovs-ofctl: invalid priority
+dl_type   —–> Aqui especificamos o Ethertype, isto é, o número que corresponde  ao protocolo do datagrama que é carregado pelo quadro Ethernet. É bom dar uma olhada nos diferentes tipos de Ethertype. O dl_type=0x0800 quer dizer que a regra criada está restrita à datagramas IPv4.
+nw_proto   —> Número do protocolo que corresponde ao segmento encapsulado no datagrama IP. No exemplo em questão, utilizamos o valor 6 que corresponde ao TCP.
+nw_src   ——> Endereço IPv4 de saída.
+nw_dst   ——> Endereço IPv4 de destino.
+tp_dst ou tp_src   ——-> Porta de destino ou origemda camada de Transporte, respectivamente. No exemplo, a aplicação executa no servidor na porta 5000.
+actions   ——> Por último temos o trecho da regra que define a ação que será tomada pelo OvS. Em nosso exemplo, a ação diz ao switch o que fazer com os pacotes que venham a combinar com a regra inserida. No nosso exemplo, encaminhamos todo o tráfego para a interface onde se encontra o servidor (primeira regra) e para o cliente (segunda regra).
