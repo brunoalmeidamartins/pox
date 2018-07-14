@@ -9,6 +9,7 @@ from pox.lib.util import str_to_bool, dpid_to_str
 from pox.lib.recoco import Timer
 import pox.openflow.libopenflow_01 as of
 from pox.lib.revent import *
+from scapy.all import * #Biblioteca de manipulacao de pacotes
 import time
 import os
 import json
@@ -96,7 +97,7 @@ class multicast (EventMixin):
                             '''
                             Adiciona o servidor de envio no arquivo IPServidoresMulticast.json
                             '''
-                            dado = dict(str(net.dstip) = str(transp.port))# IP Servidor e porta
+                            #dado = dict(str(net.dstip) = str(transp.port))# IP Servidor e porta
                             try:
                                 arquivo_json = open("IPServidoresMulticast.json","w")
                                 arquivo_json.write(dado)
@@ -147,8 +148,41 @@ class multicast (EventMixin):
             '''
         elif isinstance(net,arp):
             log.info("Pacote ARP")
-            log.info(net)
+            log.info(packet)
             log.info(" ")
+            log.info(net.hwsrc)
+            #log.info(net.psrc)
+            log.info(net.hwdst)
+            log.info(net.opcode)
+            log.info(" ")
+            #op=ARP.is_at,
+            #hwsrc=src_mac_addr,
+            #psrc=frame.payload.pdst,
+            #hwdst=frame.payload.hwsrc,
+            #pdst=frame.payload.psrc
+            #log.info(net)
+            #log.info(transp) # Nao possui transp
+            r = arp()
+            r.hwtype = net.hwtype
+            r.prototype = net.prototype
+            r.hwlen = net.hwlen
+            r.protolen = net.protolen
+            r.opcode = arp.REPLY
+            r.hwdst = net.hwsrc
+            r.protodst = net.protosrc
+            r.protosrc = net.protodst
+            r.hwsrc = '00:00:00:00:03:15'#self.arpTable[dpid][a.protodst].mac
+            e = ethernet(type=packet.type, src=self.dpid_to_mac(dpid),
+                         dst=net.hwsrc)
+            e.set_payload(r)
+            log.debug("%i %i answering ARP for %s" % (dpid, inport,
+             r.protosrc))
+            msg = of.ofp_packet_out()
+            msg.data = e.pack()
+            msg.actions.append(of.ofp_action_output(port =
+                                                    of.OFPP_IN_PORT))
+            msg.in_port = inport
+            event.connection.send(msg)
             return
         else:
             #log.info("Aconteceu nada!!")

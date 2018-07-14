@@ -33,3 +33,10 @@ nw_src   ——> Endereço IPv4 de saída.
 nw_dst   ——> Endereço IPv4 de destino.
 tp_dst ou tp_src   ——-> Porta de destino ou origemda camada de Transporte, respectivamente. No exemplo, a aplicação executa no servidor na porta 5000.
 actions   ——> Por último temos o trecho da regra que define a ação que será tomada pelo OvS. Em nosso exemplo, a ação diz ao switch o que fazer com os pacotes que venham a combinar com a regra inserida. No nosso exemplo, encaminhamos todo o tráfego para a interface onde se encontra o servidor (primeira regra) e para o cliente (segunda regra).
+
+
+
+"""
+Biblioteca de Redes Python
+"""
+scapy ou Packeth

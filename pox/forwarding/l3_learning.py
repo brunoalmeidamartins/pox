@@ -346,4 +346,3 @@ def launch (fakeways="", arp_for_unknowns=None, wide=False):
   else:
     arp_for_unknowns = str_to_bool(arp_for_unknowns)
   core.registerNew(l3_switch, fakeways, arp_for_unknowns, wide)
-
