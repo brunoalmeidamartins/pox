@@ -40,3 +40,47 @@ actions   ——> Por último temos o trecho da regra que define a ação que se
 Biblioteca de Redes Python
 """
 scapy ou Packeth
+
+
+"""
+Resposta de ARP dada pelo l3_learning
+"""
+[forwarding.l3_learning ] r.hwtype = 1
+[forwarding.l3_learning ] r.prototype = 2048
+[forwarding.l3_learning ] r.hwlen = 6
+[forwarding.l3_learning ] r.protolen = 4
+[forwarding.l3_learning ] r.opcode = 2
+[forwarding.l3_learning ] r.hwdst = 16:b2:28:98:20:2d
+[forwarding.l3_learning ] r.protodst = 10.0.0.2
+[forwarding.l3_learning ] r.protosrc = 10.0.0.1
+[forwarding.l3_learning ] r.hwsrc = 2a:bc:e3:ed:37:5d
+[forwarding.l3_learning ] type = 2054
+[forwarding.l3_learning ] src = 00:00:00:00:00:01
+[forwarding.l3_learning ] dst = 16:b2:28:98:20:2d
+[forwarding.l3_learning ] e = [00:00:00:00:00:01>16:b2:28:98:20:2d ARP]
+[forwarding.l3_learning ] e.set_payload = [ARP REPLY hw:1 p:2048 2a:bc:e3:ed:37:5d>16:b2:28:98:20:2d 10.0.0.1>10.0.0.2]
+[forwarding.l3_learning ] 1 2 answering ARP for 10.0.0.1
+[forwarding.l3_learning ] of.OFPP_IN_PORT = 65528
+[forwarding.l3_learning ] inport = 2
+
+
+"""
+Resposta de ARP dada pelo multicast3
+"""
+[multicast3             ] r.hwtype = 1
+[multicast3             ] r.prototype = 2048
+[multicast3             ] r.hwlen = 6
+[multicast3             ] r.protolen = 4
+[multicast3             ] r.opcode = 2
+[multicast3             ] r.hwdst = 00:00:00:00:01:01
+[multicast3             ] r.protodst = 10.0.0.1
+[multicast3             ] r.protosrc = 10.0.0.16
+[multicast3             ] r.hwsrc = 00:00:00:00:03:15
+[multicast3             ] type = 2054
+[multicast3             ] src = 00:00:00:00:00:01
+[multicast3             ] dst = 00:00:00:00:01:01
+[multicast3             ] e = [00:00:00:00:00:01>00:00:00:00:01:01 ARP]
+[multicast3             ] e.set_payload = [ARP REPLY hw:1 p:2048 00:00:00:00:03:15>00:00:00:00:01:01 10.0.0.16>10.0.0.1]
+[multicast3             ] 1 1 answering ARP for 10.0.0.16
+[multicast3             ] port = 65528
+[multicast3             ] inport = 1

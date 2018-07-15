@@ -307,24 +307,40 @@ class l3_switch (EventMixin):
 
                   r = arp()
                   r.hwtype = a.hwtype
+                  log.info("r.hwtype = "+str(r.hwtype))
                   r.prototype = a.prototype
+                  log.info("r.prototype = "+str(r.prototype))
                   r.hwlen = a.hwlen
+                  log.info("r.hwlen = "+str(r.hwlen))
                   r.protolen = a.protolen
+                  log.info("r.protolen = "+str(r.protolen))
                   r.opcode = arp.REPLY
+                  log.info("r.opcode = "+str(r.opcode))
                   r.hwdst = a.hwsrc
+                  log.info("r.hwdst = "+str(r.hwdst))
                   r.protodst = a.protosrc
+                  log.info("r.protodst = "+str(r.protodst))
                   r.protosrc = a.protodst
+                  log.info("r.protosrc = "+str(r.protosrc))
                   r.hwsrc = self.arpTable[dpid][a.protodst].mac
+                  log.info('r.hwsrc = '+str(r.hwsrc))
                   e = ethernet(type=packet.type, src=dpid_to_mac(dpid),
                                dst=a.hwsrc)
+                  log.info('type = '+str(packet.type))
+                  log.info('src = '+str(dpid_to_mac(dpid)))
+                  log.info('dst = '+str(a.hwsrc))
+                  log.info("e = "+str(e))
                   e.set_payload(r)
+                  log.info('e.set_payload = '+str(e.payload))
                   log.debug("%i %i answering ARP for %s" % (dpid, inport,
                    r.protosrc))
                   msg = of.ofp_packet_out()
                   msg.data = e.pack()
                   msg.actions.append(of.ofp_action_output(port =
                                                           of.OFPP_IN_PORT))
+                  log.info('of.OFPP_IN_PORT = '+str(of.OFPP_IN_PORT))
                   msg.in_port = inport
+                  log.info('inport = '+str(inport))
                   event.connection.send(msg)
                   return
 
