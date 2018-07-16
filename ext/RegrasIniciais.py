@@ -95,8 +95,14 @@ Regras para gerar um PacketIn no controlador caso seja um pacote UDP com destino
 #ovs-ofctl add-flow s1 dl_src=00:00:00:00:01:01,priority=50000,actions=controller
 #ovs-ofctl add-flow switch priority=50000,dl_type=0x0800,nw_proto=17,tp_dst=1234,actions=output:controller
 for i in listaSwitches:
-    comando = 'ovs-ofctl add-flow ' + i + ' priority=50000,dl_type=0x0800,nw_proto=17,tp_dst=1234,actions=output:controller'
+    #comando = 'ovs-ofctl add-flow ' + i + ' priority=50000,dl_type=0x0800,nw_proto=17,tp_dst=1234,actions=output:controller' #Comando Valido
+    #comando = 'ovs-ofctl add-flow ' + i + ' priority=50000,dl_type=0x0800,nw_proto=17,actions=output:controller'
+    comando = 'ovs-ofctl add-flow ' + i + ' priority=40000,dl_type=0x0800,nw_dst=10.0.0.18,actions=output:controller'
+    comando2 = 'ovs-ofctl add-flow ' + i + ' priority=40000,dl_type=0x0800,nw_dst=10.0.0.19,actions=output:controller'
+    comando3 = 'ovs-ofctl add-flow ' + i + ' priority=40000,dl_type=0x0800,nw_dst=10.0.0.20,actions=output:controller'
     executaComandosOVS(comando)
+    executaComandosOVS(comando2)
+    executaComandosOVS(comando3)
 
 
 
