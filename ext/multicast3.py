@@ -9,12 +9,26 @@ from pox.lib.util import str_to_bool, dpid_to_str
 from pox.lib.recoco import Timer
 import pox.openflow.libopenflow_01 as of
 from pox.lib.revent import *
+#import pox.host_tracker.host_tracker as host_tracker #Biblioteca host_tracker
+import pox.proto.arp_helper as arp_helper
 #from scapy.all import * #Biblioteca de manipulacao de pacotes
 import time
 import os
 import json
 
 senha = 'bruno270591'
+#Instala as regras inicais nos swtiches
+def _handle_ConnectionUp(event):
+    '''
+    Primeiro evento gerado pelo swtich s3 instala as regras iniciais
+    '''
+    dpid = event.dpid
+    if str(dpid)== '3': #Instala as regras Iniciais
+        #Chama script de execucao dos links principais
+        log.debug("Regras Iniciais Instaladas")
+        os.system('python pox/ext/RegrasIniciais.py')
+
+
 class multicast (EventMixin):
 #class multicast (object):
     def __init__ (self, fakeways = [], arp_for_unknowns = False, wide = False):
@@ -46,7 +60,8 @@ class multicast (EventMixin):
       #Tabela de ARP de IPServidores
       self.arpTableServidores = {'10.0.0.18':'00:00:00:00:03:18',
                               '10.0.0.19':'00:00:00:00:03:19',
-                              '10.0.0.20':'00:00:00:00:03:20'}
+                              '10.0.0.20':'00:00:00:00:03:20',
+                              '10.0.0.21':'00:00:00:00:03:21'}
 
       #Tabela de servidores Multicast
       self.tableIPServidores = []
@@ -59,7 +74,6 @@ class multicast (EventMixin):
 
       # This timer handles expiring stuff
       #self._expire_timer = Timer(5, self._handle_expiration, recurring=True)
-
 
       core.listen_to_dependencies(self)
     #Funcao retorna uma string com portas do switch com o fluxo
@@ -83,63 +97,7 @@ class multicast (EventMixin):
             t = t+1
         #log.info(p)
         return p
-    # Funcao que retorna o switch e a porta de um host a partir de um endereco IP
-    def getSwitchPort(self,ip):
-        self.hosts = core.host_tracker.entryByMAC
-        for h in self.hosts.keys():
-            ip_aux = self.hosts[h].ipAddrs.keys()[0]
-            if ip_aux == ip:
-                return (self.hosts[h].dpid,self.hosts[h].port)
-    #Funcao que envia um ARP Reply
-    def sendARP(self,a,portaSaida, dpid_switch,tipo_pkt,event):
-        #s,p = self.getSwitchPort(a.protodst)
-        s = dpid_switch
-        #s = 1
-        log.info('dpid_switch = '+str(s))
-        p = portaSaida
-        log.info('Porta said = '+str(p))
-        e = ethernet(type=tipo_pkt,src=a.hwsrc,dst=a.hwdst)
-        e.payload = a
-        #log.info('Switch %d answering ARP_REPLY for %s to port %s' %(s,str(a.protosrc),p))
-        msg = of.ofp_packet_out()
-        #msg = of.ofp_action_nw_addr()
-        #log.debug(of.ofp_packet_out())
-        msg.data = e.pack()
-        #msg.match.dl_type = 0x800
-        #log.info("msg.nw_src = "+str(msg.protodst))
-        log.debug(dir(msg))
-        #log.info(msg._buffer_id)
-        #msg.nw_src = IPAddr("10.0.0.18")
-        #msg.nw_dst = IPAddr("10.0.0.1")
-        msg.actions.append(of.ofp_action_output(port=p))
-        msg.actions.append(of.ofp_action_dl_addr.set_src(EthAddr('00:00:00:00:03:18')))
-        msg.actions.append(of.ofp_action_dl_addr.set_dst(EthAddr('00:00:00:00:01:01')))
-        msg.actions.append(of.ofp_action_nw_addr.set_src(IPAddr("10.0.0.18")))
-        msg.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.1")))
-        log.info(msg.show())
-        log.debug(msg.actions)
-        #core.openflow.getConnection(s).send(msg)
-        event.connection.send(msg)
 
-    # Funcao que cria um ARP_REPLY a partir de um MAC conhecido
-    def replyARP(self,a,mac):
-        r = pkt.arp()
-        r.hwtype = a.hwtype
-        r.prototype = a.prototype
-        r.hwlen = a.hwlen
-        r.protolen = a.protolen
-        r.opcode = pkt.arp.REPLY
-        r.hwdst = a.hwsrc
-        r.hwsrc = mac
-        r.protodst = a.protosrc
-        r.protosrc = a.protodst
-        e = pkt.ethernet(type=packet.type,dst=a.hwsrc)
-        e.payload = r
-        log.info('Switch %d answering ARP_REPLY for %s to port %s' %(event.dpid,str(a.protodst),event.port))
-        msg = of.ofp_packet_out()
-        msg.data = e.pack()
-        msg.actions.append(of.ofp_action_output(port=event.port))
-        event.connection.send(msg)
     def executaComandosOVS(self,comando): #Executa comandos direto no openvswitch
         #print(comando)
         text = os.popen("echo %s | sudo -S %s" % (senha, comando))
@@ -160,7 +118,6 @@ class multicast (EventMixin):
 
     def dpid_to_mac (self,dpid):
         return EthAddr("%012x" % (dpid & 0xffFFffFFffFF,))
-
 
     def defineSaidaHost(self, EnderecoMac, porta):
         msg = of.ofp_flow_mod()
@@ -184,7 +141,7 @@ class multicast (EventMixin):
             #.info("Pacote LLDPTYPE")
             #return
         if isinstance(net, ipv4):
-            log.info("Pacote IPv4")
+            #log.info("Pacote IPv4")
             #log.info("Evento gerado na porta ="+str(inport))
             if (inport == 1 or inport == 2):
                 #if()
@@ -192,14 +149,9 @@ class multicast (EventMixin):
                 for i in self.arpTableServidores:
                     lista.append(i)
 
-                #if(net.protocol != 17):
                 if str(net.dstip) not in lista:
-                    '''
-                    Primeiro evento gerado instala a regra para todos os hosts
-                    '''
-                    #Chama script de execucao dos links principais
-                    log.debug("Regras Iniciais Instaladas")
-                    os.system('python pox/ext/RegrasIniciais.py')
+                    #Faz nada
+                    return
                 else:
                     #if (str(transp.dstport) == '1234'): #Eventos foram gerados por hosts conectados ao swtich
                     if str(net.dstip) in lista:
@@ -294,13 +246,13 @@ class multicast (EventMixin):
 
                                 #Verifico de qual porta veio para fazer a rescrita de cabecalho
                                 if inport == 1:
-                                    comando2 = 'ovs-ofctl mod-flows s1 priority=49999,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.1,mod_dl_dst:00:00:00:00:01:01,output:1'
+                                    comando2 = 'ovs-ofctl mod-flows s1 priority=5001,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.1,mod_dl_dst:00:00:00:00:01:01,output:1'
                                     self.executaComandosOVS(comando2)
                                     lista_Portas = [1]
                                     info = {str(net.dstip):lista_Portas}
                                     self.tableSwtichFluxo[str(self.dpid_to_mac(dpid))].append(info) #Adiciona o IP e a porta que ele esta saido na tabela de Fluxo do Switch
                                 else:
-                                    comando2 = 'ovs-ofctl mod-flows s1 priority=49999,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.2,mod_dl_dst:00:00:00:00:01:02,output:2'
+                                    comando2 = 'ovs-ofctl mod-flows s1 priority=5001,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.2,mod_dl_dst:00:00:00:00:01:02,output:2'
                                     self.executaComandosOVS(comando2)
                                     lista_Portas = [2]
                                     info = {str(net.dstip):lista_Portas}
@@ -456,140 +408,15 @@ class multicast (EventMixin):
                                     self.tableSwtichFluxo[str(self.dpid_to_mac(dpid))].append(info) #Adiciona o IP e a porta que ele esta saido na tabela de Fluxo do Switch
                                 return
 
-            '''
-            if str(self.dpid_to_mac(dpid)) == '00:00:00:00:00:01':
-                #(inport == 1)
-                msg = of.ofp_flow_mod()
-                msg.match.dl_src = EthAddr('00:00:00:00:01:01')
-                msg.match.dl_dst = EthAddr('00:00:00:00:03:11')
-                msg.actions.append(of.ofp_action_output(port = 13))
-                event.connection.send(msg)
-
-                #msg2 = of.ofp_flow_mod()
-                #msg2.match.dl_dst = EthAddr('00:00:00:00:01:01')
-                #msg2.actions.append(of.ofp_action_output(port = 1))
-                #event.connection.send(self.defineSaidaHost('00:00:00:00:01:01',1))
-                #log.info(msg)
-            elif str(self.dpid_to_mac(dpid)) == '00:00:00:00:00:03':
-                msg = of.ofp_flow_mod()
-                msg.match.dl_src = EthAddr('00:00:00:00:03:11')
-                msg.match.dl_dst = EthAddr('00:00:00:00:01:01')
-                msg.actions.append(of.ofp_action_output(port = 11))
-                event.connection.send(msg)
-
-                #msg2 = of.ofp_flow_mod()
-                #msg2.match.dl_dst = EthAddr('00:00:00:00:03:11')
-                #msg2.actions.append(of.ofp_action_output(port = 1))
-                event.connection.send(self.defineSaidaHost('00:00:00:00:03:11',1))
-                #log.info(msg)
-            '''
         elif isinstance(net,arp):
             log.info("Protocolo ARP")
+            mac_resp =  self.arpTableServidores[str(net.protodst)]
+            arp_helper.send_arp_reply(event,mac_resp)
             return
-            '''
-            a = packet.find('arp')
-            mac = self.arpTableServidores[str(net.protodst)]
-            r = arp()
-            r.hwtype = a.hwtype
-            r.prototype = a.prototype
-            r.hwlen = a.hwlen
-            r.protolen = a.protolen
-            r.opcode = arp.REPLY
-            r.hwdst = a.hwsrc
-            r.hwsrc = mac
-            r.protodst = a.protosrc
-            r.protosrc = a.protodst
-            self.sendARP(r, inport, event.dpid, packet.type, event)
-            return
-            '''
-            '''
-            packet1 = event.parsed
-            if packet.payload.opcode == arp.REQUEST:
-                r = arp()
-                r.hwsrc = self.arpTableServidores[str(net.protodst)]
-                r.hwdst = packet1.src
-                r.opcode = arp.REPLY
-                r.protosrc = IPAddr(str(net.protodst))
-                r.protodst = IPAddr(str(packet1.next.protosrc))
-                ether = ethernet()
-                ether.type = ethernet.ARP_TYPE
-                ether.dst = packet1.src
-                ether.src = self.arpTableServidores[str(net.protodst)]
-                ether.payload = r
-                #envia pacote
-                msg3 = of.ofp_packet_out()
-                msg3.data = ether.pack()
-                msg3.actions.append(of.ofp_action_output(port =
-                                                        of.OFPP_IN_PORT))
-                #log.info('of.OFPP_IN_PORT = '+str(of.OFPP_IN_PORT))
-                msg3.in_port = inport
-                #log.info('inport = '+str(inport))
-                event.connection.send(msg3)
-                return
-            elif packet.payload.opcode == arp.REPLY:
-                return
-            else:
-                return
-            '''
-
-
-            '''
-            a = packet.next
-            if a.prototype == arp.PROTO_TYPE_IP:
-                if a.hwtype == arp.HW_TYPE_ETHERNET:
-                    if a.protosrc !=0:
-                        if a.opcode == arp.REQUEST:
-                            r = arp()
-                            r.hwtype = a.hwtype
-                            log.info("r.hwtype = "+str(r.hwtype))
-                            r.prototype = a.prototype
-                            log.info("r.prototype = "+str(r.prototype))
-                            r.hwlen = a.hwlen
-                            log.info("r.hwlen = "+str(r.hwlen))
-                            r.protolen = a.protolen
-                            log.info("r.protolen = "+str(r.protolen))
-                            r.opcode = arp.REPLY
-                            log.info("r.opcode = "+str(r.opcode))
-                            r.hwdst = a.hwsrc
-                            log.info("r.hwdst = "+str(r.hwdst))
-                            r.protodst = a.protosrc
-                            log.info("r.protodst = "+str(r.protodst))
-                            r.protosrc = a.protodst
-                            log.info("r.protosrc = "+str(r.protosrc))
-                            r.hwsrc = '00:00:00:00:03:15'#self.arpTable[dpid][a.protodst].mac
-                            log.info('r.hwsrc = '+str(r.hwsrc))
-                            e = ethernet(type=packet.type, src=self.dpid_to_mac(dpid),
-                                         dst=a.hwsrc)
-                            log.info('type = '+str(packet.type))
-                            log.info('src = '+str(self.dpid_to_mac(dpid)))
-                            log.info('dst = '+str(a.hwsrc))
-                            log.info("e = "+str(e))
-                            e.set_payload(r)
-                            log.info('e.set_payload = '+str(e.payload))
-                            log.debug("%i %i answering ARP for %s" % (dpid, inport,
-                             r.protosrc))
-                            msg = of.ofp_packet_out()
-                            msg.data = e.pack()
-                            msg.actions.append(of.ofp_action_output(port =
-                                                                    of.OFPP_IN_PORT))
-                            log.info('of.OFPP_IN_PORT = '+str(of.OFPP_IN_PORT))
-                            msg.in_port = inport
-                            log.info('inport = '+str(inport))
-                            event.connection.send(msg)
-                            return
-                            '''
         else:
             #log.info("Aconteceu nada!!")
             return
 
 def launch(fakeways="", arp_for_unknowns=None, wide=False):
-    #core.openflow.addListenerByName("PacketIn",_handle_PacketIn)
     core.registerNew(multicast,fakeways, arp_for_unknowns, wide)
-    #def start():
-        #core.registerNew(multicast,fakeways, arp_for_unknowns, wide)
-        #log.info('Multicast3')
-    #core.call_when_ready(start,['openflow_discovery','host_tracker','Traffic'])
-    #core.call_when_ready(start,['host_tracker'])
-    #if core._waiters:
-        #log.warning('Missing component... Shut down POX')
-        #core.quit()
+    core.openflow.addListenerByName("ConnectionUp", _handle_ConnectionUp)
