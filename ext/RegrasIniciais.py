@@ -1,7 +1,7 @@
 import os
 
-#senha = 'My password'
-senha = 'bruno270591'
+#mypass = 'My mypassword'
+mypass = 'bruno270591'
 
 '''
 Mapeamento dos Host
@@ -44,7 +44,7 @@ linkPrincipal={'s1':[13],
 }
 def executaComandosOVS(comando):
     #print(comando)
-    text = os.popen("echo %s | sudo -S %s" % (senha, comando))
+    text = os.popen("echo %s | sudo -S %s" % (mypass, comando))
 '''
 Define regras de saida dos hosts nos switchs "Hosts Conectados ao switches"
 '''

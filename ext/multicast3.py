@@ -16,7 +16,7 @@ import time
 import os
 import json
 
-senha = 'bruno270591'
+mypass = 'bruno270591'
 #Instala as regras inicais nos swtiches
 def _handle_ConnectionUp(event):
     '''
@@ -27,6 +27,8 @@ def _handle_ConnectionUp(event):
         #Chama script de execucao dos links principais
         log.debug("Regras Iniciais Instaladas")
         os.system('python pox/ext/RegrasIniciais.py')
+        log.debug("Regras de Qos Instaladas")
+        os.system('python pox/ext/CriaQoS.py')
 
 
 class multicast (EventMixin):
@@ -102,7 +104,7 @@ class multicast (EventMixin):
 
     def executaComandosOVS(self,comando): #Executa comandos direto no openvswitch
         #print(comando)
-        text = os.popen("echo %s | sudo -S %s" % (senha, comando))
+        text = os.popen("echo %s | sudo -S %s" % (mypass, comando))
 
     def open_arquivoIPServidores(self,path):
         lista = []
