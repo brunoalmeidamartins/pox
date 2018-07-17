@@ -61,7 +61,9 @@ class multicast (EventMixin):
       self.arpTableServidores = {'10.0.0.18':'00:00:00:00:03:18',
                               '10.0.0.19':'00:00:00:00:03:19',
                               '10.0.0.20':'00:00:00:00:03:20',
-                              '10.0.0.21':'00:00:00:00:03:21'}
+                              '10.0.0.21':'00:00:00:00:03:21',
+                              '10.0.0.22':'00:00:00:00:03:22',
+                              '10.0.0.23':'00:00:00:00:03:23'}
 
       #Tabela de servidores Multicast
       self.tableIPServidores = []
@@ -133,7 +135,6 @@ class multicast (EventMixin):
 
         net = packet.next # Camada de rede
         transp = packet.next.next # Camada de transporte
-
         if not packet.parsed:
             log.info("Pacote not Parsed")
             return
@@ -154,7 +155,7 @@ class multicast (EventMixin):
                     return
                 else:
                     #if (str(transp.dstport) == '1234'): #Eventos foram gerados por hosts conectados ao swtich
-                    if str(net.dstip) in lista:
+                    if str(net.dstip) in lista and str(transp.dstport) != '12320':
                         if str(self.dpid_to_mac(dpid)) == '00:00:00:00:00:03': # Switch onde esta os servidores S3
                             msg = of.ofp_flow_mod()
                             #msg.match.dl_src = EthAddr('00:00:00:00:01:01')
@@ -166,18 +167,6 @@ class multicast (EventMixin):
                             msg.actions.append(of.ofp_action_output(port = 17)) #Nao tem ninguem conectado a essa porta
                             event.connection.send(msg)
                             log.info("Regra de Drop Adicionada!!") # Supoe que drop o pacote
-                            '''
-                            Adiciona o servidor de envio no arquivo IPServidoresMulticast.txt
-
-                            #dado = dict(str(net.dstip) = str(transp.port))# IP Servidor e porta
-                            try:
-                                with open("/home/bruno/pox/ext/IPServidoresMulticast.txt","a") as arquivo:
-                                    log.info("IP adicionado ao arquivo:"+str(net.dstip))
-                                    arquivo.write(str(net.dstip)+' \n')
-                                    arquivo.close()
-                            except Exception as erro:
-                                log.info("Erro ao abrir arquivo"+str(erro))
-                            '''
                             '''
                             Adiciona o IP do servidor multicast a tabela
                             '''
@@ -203,22 +192,21 @@ class multicast (EventMixin):
                                 for j in i:
                                     if str(j) == str(net.dstip):
                                         k = i
+                            a = []
                             if len(k) != 0:
+                                a = k[str(net.dstip)] #lista de portas que estao com fluxo swtich
+                            if len(a) != 0:
                                 #Levar o fluxo para a porta entao
                                 log.debug('Switch ja possui o Fluxo')
                                 p = self.retornaStringListaPortas(str(self.dpid_to_mac(dpid)),net.dstip) #Lista de portas que contem o fluxo
                                 if inport == 1:
                                     comando2 = 'ovs-ofctl mod-flows s1 priority=50002,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.2,mod_dl_dst:00:00:00:00:01:02,output:'+p+',1'
                                     self.executaComandosOVS(comando2)
-                                    lista_Portas = [1]
-                                    info = {str(net.dstip):lista_Portas}
-                                    self.tableSwtichFluxo[str(self.dpid_to_mac(dpid))].append(info) #Adiciona o IP e a porta que ele esta saido na tabela de Fluxo do Switch
+                                    a.append(1)
                                 else:
                                     comando2 = 'ovs-ofctl mod-flows s1 priority=50002,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.1,mod_dl_dst:00:00:00:00:01:01,output:'+p+',2'
                                     self.executaComandosOVS(comando2)
-                                    lista_Portas = [2]
-                                    info = {str(net.dstip):lista_Portas}
-                                    self.tableSwtichFluxo[str(self.dpid_to_mac(dpid))].append(info) #Adiciona o IP e a porta que ele esta saido na tabela de Fluxo do Switch
+                                    a.append(2)
                                 return
                             else:
                                 log.debug('Switch ainda nao possui o Fluxo')
@@ -281,22 +269,21 @@ class multicast (EventMixin):
                                 for j in i:
                                     if str(j) == str(net.dstip):
                                         k = i
+                            a = []
                             if len(k) != 0:
+                                a = k[str(net.dstip)] #lista de portas que estao com fluxo swtich
+                            if len(a) != 0:
                                 log.debug('Switch ja possui o Fluxo')
                                 #Levar o fluxo para a porta entao
                                 p = self.retornaStringListaPortas(str(self.dpid_to_mac(dpid)),net.dstip) #Lista de portas que contem o fluxo
                                 if inport == 1:
                                     comando2 = 'ovs-ofctl mod-flows s2 priority=50002,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.4,mod_dl_dst:00:00:00:00:02:04,output:'+p+',1'
                                     self.executaComandosOVS(comando2)
-                                    lista_Portas = [1]
-                                    info = {str(net.dstip):lista_Portas}
-                                    self.tableSwtichFluxo[str(self.dpid_to_mac(dpid))].append(info) #Adiciona o IP e a porta que ele esta saido na tabela de Fluxo do Switch
+                                    a.append(1)
                                 else:
                                     comando2 = 'ovs-ofctl mod-flows s2 priority=50002,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.3,mod_dl_dst:00:00:00:00:02:03,output:'+p+',2'
                                     self.executaComandosOVS(comando2)
-                                    lista_Portas = [2]
-                                    info = {str(net.dstip):lista_Portas}
-                                    self.tableSwtichFluxo[str(self.dpid_to_mac(dpid))].append(info) #Adiciona o IP e a porta que ele esta saido na tabela de Fluxo do Switch
+                                    a.append(2)
                                 return
                             else:
                                 log.debug('Switch ainda nao possui o Fluxo')
@@ -352,22 +339,21 @@ class multicast (EventMixin):
                                 for j in i:
                                     if str(j) == str(net.dstip):
                                         k = i
+                            a = []
                             if len(k) != 0:
+                                a = k[str(net.dstip)] #lista de portas que estao com fluxo swtich
+                            if len(a) != 0:
                                 log.debug('Switch ja possui o Fluxo')
                                 #Levar o fluxo para a porta entao
                                 p = self.retornaStringListaPortas(str(self.dpid_to_mac(dpid)),net.dstip) #Lista de portas que contem o fluxo
                                 if inport == 1:
                                     comando2 = 'ovs-ofctl mod-flows s4 priority=50002,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.6,mod_dl_dst:00:00:00:00:04:06,output:'+p+',1'
                                     self.executaComandosOVS(comando2)
-                                    lista_Portas = [1]
-                                    info = {str(net.dstip):lista_Portas}
-                                    self.tableSwtichFluxo[str(self.dpid_to_mac(dpid))].append(info) #Adiciona o IP e a porta que ele esta saido na tabela de Fluxo do Switch
+                                    a.append(1)
                                 else:
                                     comando2 = 'ovs-ofctl mod-flows s4 priority=50002,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.3,mod_dl_dst:00:00:00:00:04:05,output:'+p+',2'
                                     self.executaComandosOVS(comando2)
-                                    lista_Portas = [2]
-                                    info = {str(net.dstip):lista_Portas}
-                                    self.tableSwtichFluxo[str(self.dpid_to_mac(dpid))].append(info) #Adiciona o IP e a porta que ele esta saido na tabela de Fluxo do Switch
+                                    a.append(2)
                                 return
                             else:
                                 log.debug('Switch ainda nao possui o Fluxo')
@@ -407,6 +393,189 @@ class multicast (EventMixin):
                                     info = {str(net.dstip):lista_Portas}
                                     self.tableSwtichFluxo[str(self.dpid_to_mac(dpid))].append(info) #Adiciona o IP e a porta que ele esta saido na tabela de Fluxo do Switch
                                 return
+                    else: #Pedido para sair do Grupo Multicast
+                        '''
+                        Pedido para sair do Grupo Multicast
+                        '''
+                        log.info('IP = '+str(net.srcip)+' quer sair do Grupo Multicast '+str(net.dstip))
+
+                        ip_fluxo = net.dstip
+                        l = self.tableSwtichFluxo[str(self.dpid_to_mac(dpid))]
+                        k = {}
+                        for i in l:
+                            for j in i:
+                                if str(j) == str(ip_fluxo):
+                                    k = i
+                        #log.info(k)
+                        t = k[str(ip_fluxo)] #lista de portas que estao com fluxo swtich
+                        log.debug(t)
+
+
+                        if str(self.dpid_to_mac(dpid)) == '00:00:00:00:00:01': # Swithc s1
+                            '''
+                            Fazer as regras aqui!!
+                            '''
+                            p = self.retornaStringListaPortas(str(self.dpid_to_mac(dpid)),net.dstip) #Lista de portas que contem o fluxo
+                            if len(t) == 1: #Tem somente um fluno no switch
+                                #Retiro o fluxo da porta em s3
+                                l = self.tableSwtichFluxo['00:00:00:00:00:03']
+                                k = {}
+                                for i in l:
+                                    for j in i:
+                                        if str(j) == str(ip_fluxo):
+                                            k = i
+                                #log.info(k)
+                                lista_portas = k[str(ip_fluxo)] #lista de portas que estao com fluxo swtich
+                                lista_portas.remove(11)
+                                b = self.retornaStringListaPortas('00:00:00:00:00:03',net.dstip) #Lista de portas que contem o fluxo
+                                comando2 = 'ovs-ofctl mod-flows s3 priority=5001,dl_type=0x800,nw_src=10.0.0.11,nw_dst='+str(net.dstip)+',actions=output:'+b
+                                self.executaComandosOVS(comando2)
+                                del t[:] #Apaga lista de portas do fluxo no swtich
+
+                            else:
+                                #Retiro somente o fluxo da porta
+                                if inport == 1:
+                                    l = self.tableSwtichFluxo['00:00:00:00:00:01']
+                                    k = {}
+                                    for i in l:
+                                        for j in i:
+                                            if str(j) == str(ip_fluxo):
+                                                k = i
+                                    #log.info(k)
+                                    lista_portas = k[str(ip_fluxo)] #lista de portas que estao com fluxo swtich
+                                    lista_portas.remove(1)
+                                    b = self.retornaStringListaPortas(str(self.dpid_to_mac(dpid)),net.dstip) #Lista de portas que contem o fluxo
+                                    comando2 = 'ovs-ofctl mod-flows s1 priority=49999,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.1,mod_dl_dst:00:00:00:00:01:02,output:'+b
+                                    #comando2 = 'ovs-ofctl mod-flows s1 priority=49999,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=output:'+b
+                                    log.debug(comando2)
+                                    self.executaComandosOVS(comando2)
+                                else:
+                                    l = self.tableSwtichFluxo['00:00:00:00:00:01']
+                                    k = {}
+                                    for i in l:
+                                        for j in i:
+                                            if str(j) == str(ip_fluxo):
+                                                k = i
+                                    #log.info(k)
+                                    lista_portas = k[str(ip_fluxo)] #lista de portas que estao com fluxo swtich
+                                    lista_portas.remove(2)
+                                    b = self.retornaStringListaPortas(str(self.dpid_to_mac(dpid)),net.dstip) #Lista de portas que contem o fluxo
+                                    comando2 = 'ovs-ofctl mod-flows s1 priority=49999,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.1,mod_dl_dst:00:00:00:00:01:01,output:'+b
+                                    #comando2 = 'ovs-ofctl mod-flows s1 priority=49999,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=output:'+b
+                                    log.debug(comando2)
+                                    self.executaComandosOVS(comando2)
+                                return
+                            return
+                        elif str(self.dpid_to_mac(dpid)) == '00:00:00:00:00:02': # Swithc s2
+                            '''
+                            Fazer as regras aqui!!
+                            '''
+                            p = self.retornaStringListaPortas(str(self.dpid_to_mac(dpid)),net.dstip) #Lista de portas que contem o fluxo
+                            if len(t) == 1: #Tem somente um fluno no switch
+                                #Retiro o fluxo da porta em s3
+                                l = self.tableSwtichFluxo['00:00:00:00:00:03']
+                                k = {}
+                                for i in l:
+                                    for j in i:
+                                        if str(j) == str(ip_fluxo):
+                                            k = i
+                                #log.info(k)
+                                lista_portas = k[str(ip_fluxo)] #lista de portas que estao com fluxo swtich
+                                lista_portas.remove(12)
+                                b = self.retornaStringListaPortas('00:00:00:00:00:03',net.dstip) #Lista de portas que contem o fluxo
+                                comando2 = 'ovs-ofctl mod-flows s3 priority=5001,dl_type=0x800,nw_src=10.0.0.11,nw_dst='+str(net.dstip)+',actions=output:'+b
+                                self.executaComandosOVS(comando2)
+                                del t[:] #Apaga lista de portas do fluxo no swtich
+                            else:
+                                #Retiro somente o fluxo da porta
+                                if inport == 1:
+                                    l = self.tableSwtichFluxo['00:00:00:00:00:02']
+                                    k = {}
+                                    for i in l:
+                                        for j in i:
+                                            if str(j) == str(ip_fluxo):
+                                                k = i
+                                    #log.info(k)
+                                    lista_portas = k[str(ip_fluxo)] #lista de portas que estao com fluxo swtich
+                                    lista_portas.remove(1)
+                                    b = self.retornaStringListaPortas(str(self.dpid_to_mac(dpid)),net.dstip) #Lista de portas que contem o fluxo
+                                    comando2 = 'ovs-ofctl mod-flows s2 priority=49999,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.4,mod_dl_dst:00:00:00:00:02:04,output:'+b
+                                    #comando2 = 'ovs-ofctl mod-flows s2 priority=49999,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=output:'+b
+                                    self.executaComandosOVS(comando2)
+                                else:
+                                    l = self.tableSwtichFluxo['00:00:00:00:00:02']
+                                    k = {}
+                                    for i in l:
+                                        for j in i:
+                                            if str(j) == str(ip_fluxo):
+                                                k = i
+                                    #log.info(k)
+                                    lista_portas = k[str(ip_fluxo)] #lista de portas que estao com fluxo swtich
+                                    lista_portas.remove(2)
+                                    b = self.retornaStringListaPortas(str(self.dpid_to_mac(dpid)),net.dstip) #Lista de portas que contem o fluxo
+                                    comando2 = 'ovs-ofctl mod-flows s2 priority=49999,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.3,mod_dl_dst:00:00:00:00:02:03,output:'+b
+                                    #comando2 = 'ovs-ofctl mod-flows s2 priority=49999,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=output:'+b
+                                    self.executaComandosOVS(comando2)
+                                return
+                            return
+                        elif str(self.dpid_to_mac(dpid)) == '00:00:00:00:00:04': # Swithc s4
+                            '''
+                            Fazer as regras aqui!!
+                            '''
+                            p = self.retornaStringListaPortas(str(self.dpid_to_mac(dpid)),net.dstip) #Lista de portas que contem o fluxo
+                            if len(t) == 1: #Tem somente um fluno no switch
+                                #Retiro o fluxo da porta em s3
+                                l = self.tableSwtichFluxo['00:00:00:00:00:03']
+                                k = {}
+                                for i in l:
+                                    for j in i:
+                                        if str(j) == str(ip_fluxo):
+                                            k = i
+                                #log.info(k)
+                                lista_portas = k[str(ip_fluxo)] #lista de portas que estao com fluxo swtich
+                                lista_portas.remove(14)
+                                b = self.retornaStringListaPortas('00:00:00:00:00:03',net.dstip) #Lista de portas que contem o fluxo
+                                comando2 = 'ovs-ofctl mod-flows s3 priority=5001,dl_type=0x800,nw_src=10.0.0.11,nw_dst='+str(net.dstip)+',actions=output:'+b
+                                #comando2 = 'ovs-ofctl mod-flows s3 priority=49999,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=output:'+b
+                                self.executaComandosOVS(comando2)
+                                del t[:] #Apaga lista de portas do fluxo no swtich
+                            else:
+                                #Retiro somente o fluxo da porta
+                                if inport == 1:
+                                    l = self.tableSwtichFluxo['00:00:00:00:00:04']
+                                    k = {}
+                                    for i in l:
+                                        for j in i:
+                                            if str(j) == str(ip_fluxo):
+                                                k = i
+                                    #log.info(k)
+                                    lista_portas = k[str(ip_fluxo)] #lista de portas que estao com fluxo swtich
+                                    lista_portas.remove(1)
+                                    b = self.retornaStringListaPortas(str(self.dpid_to_mac(dpid)),net.dstip) #Lista de portas que contem o fluxo
+                                    comando2 = 'ovs-ofctl mod-flows s4 priority=49999,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.6,mod_dl_dst:00:00:00:00:04:06,output:'+b
+                                    #comando2 = 'ovs-ofctl mod-flows s4 priority=49999,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=output:'+b
+                                    self.executaComandosOVS(comando2)
+                                else:
+                                    l = self.tableSwtichFluxo['00:00:00:00:00:04']
+                                    k = {}
+                                    for i in l:
+                                        for j in i:
+                                            if str(j) == str(ip_fluxo):
+                                                k = i
+                                    #log.info(k)
+                                    lista_portas = k[str(ip_fluxo)] #lista de portas que estao com fluxo swtich
+                                    lista_portas.remove(2)
+                                    b = self.retornaStringListaPortas(str(self.dpid_to_mac(dpid)),net.dstip) #Lista de portas que contem o fluxo
+                                    comando2 = 'ovs-ofctl mod-flows s4 priority=49999,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=mod_nw_dst:10.0.0.5,mod_dl_dst:00:00:00:00:04:05,output:'+b
+                                    #comando2 = 'ovs-ofctl mod-flows s4 priority=49999,dl_type=0x800,nw_dst='+str(net.dstip)+',actions=output:'+b
+
+                                    self.executaComandosOVS(comando2)
+                                return
+
+                            return
+                        else:
+                            return
+                        return
 
         elif isinstance(net,arp):
             log.info("Protocolo ARP")
