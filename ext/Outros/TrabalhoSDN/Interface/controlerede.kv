@@ -1,0 +1,199 @@
+#:import Cor kivy.utils.get_color_from_hex
+BoxLayout:
+    orientation:"vertical"
+
+    ######Parte da senha
+    BoxLayout:
+        orientation:"horizontal"
+        size_hint:1.,.1
+        Label:
+            text:"Digite a senha de root:"
+        TextInput:
+            id:campo_password
+            text:""
+            multiline:False
+            password:True
+        Button:
+            text:"Armazenar"
+            on_press:app.obterSenhaRoot()
+    ####FimSenha
+
+    ###Parte de escolhas Switchs/Host/Portas
+    #BoxLayout:
+    #    orientation:"horizontal"
+    #    size_hint:1.,.3
+    #    canvas.before:
+    #        Color:
+    #            rgba:Cor("#AAAAAA")
+    #        Rectangle:
+    #            pos:self.pos
+    #            size:self.size
+    #    BoxLayout:
+    #        orientation:"vertical"
+    #        Label:
+    #            text:"Swtich"
+    #        Spinner:
+    #            id:switch
+    #            text:"Selecione o Switch"
+    #            values:('s1','s2','s3','s4')
+    #    BoxLayout:
+    #        orientation:"vertical"
+    #        Label:
+    #            text:"Host"
+    #        Spinner:
+    #            id:host
+    #            text:"Selecione o Host"
+    #            values:('h1','h2','h3','h4','WebServer','IPTV')
+    #    BoxLayout:
+    #        orientation:"vertical"
+    #        Label:
+    #            text:"Porta"
+    #        Spinner:
+    #            id:porta
+    #            text:"Selecione a Porta"
+    #            on_press:app.listaPortasSwitch()
+    #            #values:('1','2','11','12','13','14')
+    ######Fim Switch/Host/Porta
+
+    ######Botões para executar Comandos
+    #BoxLayout:
+    #    orientation:"horizontal"
+    #    size_hint:1.,.10
+    #    Button:
+    #        text:"Adicionar Regra"
+    #        on_press:app.adicionaUmFluxo()
+    #    Button:
+    #        text:"Listar Fluxos"
+    #        on_press:app.listarFluxosSwitch()
+    #    Button:
+    #        text:"Apaga Fluxos"
+    #        on_press:app.apagaFluxosSwitch()
+    #
+
+
+    #######   Admim    #########################################
+    ####Tráfego Geral Entre dois HOSTS###
+    BoxLayout:
+        orientation:"vertical"
+        size_hint:1.,.08
+        Label:
+            text:"ALTERAR TRÁFEGO ENTRE DOIS HOSTS"
+            size_hint:1.,.08
+    BoxLayout:
+        orientation:"vertical"
+        BoxLayout:
+            orientation:"horizontal"
+            size_hint:1.,.30
+            BoxLayout:
+                orientation:"vertical"
+                Label:
+                    text:"Host Origem"
+                Spinner:
+                    id:hostOrigem
+                    text:"Selecione"
+                    values:('h1','h2','h3','h4','WebServer','IPTV')
+                Button:
+                    text:"Somente TX"
+                    on_press:app.alterarTX()
+
+            BoxLayout:
+                orientation:"vertical"
+                Label:
+                    text:"Host Destino"
+                Spinner:
+                    id:hostDestino
+                    text:"Selecione"
+                    values:('h1','h2','h3','h4','WebServer','IPTV')
+                Button:
+                    text:"Somente RX"
+                    on_press:app.alterarRX()
+
+            BoxLayout:
+                orientation:"vertical"
+                Label:
+                    text:"LINK"
+                Spinner:
+                    id:link
+                    text:"Selecione"
+                    values:('Principal','Backup')
+                Button:
+                    text:"Ambos"
+                    on_press:app.alterarTodoFluxoRede()
+        ##########    Fim Tráfego Geral Entre Dois Hots  ##############
+
+        ##########    Alterar Tráfego Geral de Host      ###############
+        BoxLayout:
+            orientation:"horizontal"
+            size_hint:1.,.10
+            Label:
+                text:"ALTERAR TRÁFEGO GERAL DO HOST"
+        BoxLayout:
+            orientation:"horizontal"
+            size_hint:1.,.30
+            BoxLayout:
+                orientation:"vertical"
+                Label:
+                    text:""
+                Label:
+                    text:"Selecione o Host e o Link"
+                Button:
+                    text:"Somente TX"
+                    on_press:app.alterarTrafegoTXHost()
+
+            BoxLayout:
+                orientation:"vertical"
+                Label:
+                    text:"HOST"
+                Spinner:
+                    id:host_select
+                    text:"Selecione o Host"
+                    values:('h1','h2','h3','h4','WebServer','IPTV')
+                Button:
+                    text:"Somente RX"
+                    on_press:app.alterarTrafegoRXHost()
+            BoxLayout:
+                orientation:"vertical"
+                Label:
+                    text:"LINK"
+                Spinner:
+                    id:link_select
+                    text:"Selecione o Link"
+                    values:('Principal','Backup')
+                Button:
+                    text:"Ambos"
+                    on_press:app.alterTrafegoHostCompleto()
+        ####Fim Tráfego Geral de Um Host#####
+    ################FIM AdminLeigo##########################################
+
+    #######Saida Comando
+    BoxLayout:
+        orientation:"vertical"
+        Label:
+            text:"Saída do Comando:"
+            size_hint:1.,.10
+        TextInput:
+            id:campo_saida_comando
+            text:""
+    #######Fim Saida Comando
+
+
+    ######Comando
+    BoxLayout:
+        orientation:"horizontal"
+        size_hint:1.,.1
+        Label:
+            text:"Digite um comando: "
+        TextInput:
+            id:campo_comando_entrada
+            text:""
+            multiline:False
+            on_text_validate:app.command()
+        Button:
+            text:"Executar"
+            on_press:app.command()
+        Spinner:
+            id:lista_comandos
+            text:"Comandos Executados"
+            on_release:app.listaComandosExecutados()
+            on_press:app.retornaComandoSelecionado()
+    #######Fim Comando
